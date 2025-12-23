@@ -1,53 +1,57 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Orbs = () => {
     const orbsRef = useRef([]);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         orbsRef.current.forEach((orb, i) => {
             if (!orb) return;
 
-            // Float animation
+            // Float animation - Reduced movement on mobile
             gsap.to(orb, {
-                y: "+=20",
-                duration: 3 + i,
+                y: isMobile ? "+=10" : "+=20",
+                duration: isMobile ? 4 + i : 3 + i,
                 repeat: -1,
                 yoyo: true,
                 ease: "sine.inOut",
                 delay: i * 0.5
             });
 
-            // Rotation
+            // Rotation - Disable on mobile if likely to cause paint issues, or slow down
             gsap.to(orb, {
                 rotation: 360,
-                duration: 20 + i * 5,
+                duration: isMobile ? 40 + i * 10 : 20 + i * 5,
                 repeat: -1,
                 ease: "none"
             });
         });
 
-        // React to Scroll Velocity
-        ScrollTrigger.create({
-            onUpdate: (self) => {
-                const velocity = Math.abs(self.getVelocity());
-                const timeScale = 1 + (velocity / 1500); // Subtle speed up
+        // React to Scroll Velocity - Disable on Mobile for performance
+        if (!isMobile) {
+            ScrollTrigger.create({
+                onUpdate: (self) => {
+                    const velocity = Math.abs(self.getVelocity());
+                    const timeScale = 1 + (velocity / 1500); // Subtle speed up
 
-                if (orbsRef.current.length > 0) {
-                    const tweens = gsap.getTweensOf(orbsRef.current);
-                    gsap.to(tweens, {
-                        timeScale: timeScale,
-                        duration: 0.5,
-                        overwrite: true
-                    });
+                    if (orbsRef.current.length > 0) {
+                        const tweens = gsap.getTweensOf(orbsRef.current);
+                        gsap.to(tweens, {
+                            timeScale: timeScale,
+                            duration: 0.5,
+                            overwrite: true
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
 
-    }, []);
+    }, [isMobile]);
 
     const orbData = [
         { title: "AI Prompt Architect", color: "from-cyan-500 to-blue-500", size: "w-64 h-64" },

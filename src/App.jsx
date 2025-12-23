@@ -8,14 +8,16 @@ import ExecuteButton from './components/ExecuteButton';
 import HUD from './components/HUD';
 import SmartHeader from './components/SmartHeader';
 import Loader from './components/Loader';
-import AboutMe from './pages/AboutMe';
+
+
 import { useMomentumScroll } from './hooks/useMomentumScroll';
+import { useIsMobile } from './hooks/useIsMobile';
 import gsap from 'gsap';
 
-const Home = () => {
+const Home = ({ isLoading }) => {
     return (
         <>
-            <Hero />
+            <Hero isLoading={isLoading} />
             <Timeline />
             <ExecuteButton />
             {/* Spacer for scrolling feel */}
@@ -27,9 +29,20 @@ const Home = () => {
 /* Scroll Wrapper Component */
 const ScrollWrapper = ({ children }) => {
     const { contentRef, wrapperRef } = useMomentumScroll();
+    const isMobile = useIsMobile();
+
+    // On mobile, we use native scrolling, so we don't need the fixed wrapper hacks
+    const wrapperClass = isMobile
+        ? "w-full min-h-screen overflow-x-hidden"
+        : "fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none";
+
+    const contentClass = isMobile
+        ? ""
+        : "pointer-events-auto will-change-transform";
+
     return (
-        <div ref={wrapperRef} className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div ref={contentRef} className="pointer-events-auto will-change-transform">
+        <div ref={wrapperRef} className={wrapperClass}>
+            <div ref={contentRef} className={contentClass}>
                 {children}
             </div>
         </div>
@@ -86,8 +99,7 @@ function App() {
 
                 <ScrollWrapper>
                     <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/AboutMe" element={<AboutMe />} />
+                        <Route path="/" element={<Home isLoading={isLoading} />} />
                     </Routes>
                 </ScrollWrapper>
             </div>

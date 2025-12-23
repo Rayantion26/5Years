@@ -50,6 +50,15 @@ const SmartHeader = () => {
         });
     };
 
+    const handleScrollToAboutMe = (e) => {
+        e.preventDefault();
+        gsap.to(window, {
+            duration: 1.5,
+            scrollTo: { y: "#about-me-section", offsetY: 0 },
+            ease: "power4.inOut"
+        });
+    };
+
     const handleScrollToTop = (e) => {
         if (window.location.pathname === '/') {
             e.preventDefault();
@@ -82,12 +91,21 @@ const SmartHeader = () => {
 
                     {/* Navigation Links */}
                     <div className="flex gap-8">
+
                         <a
                             href="#timeline"
                             onClick={handleScrollToTimeline}
                             className="text-sm font-light tracking-widest text-white/70 hover:text-cyan-400 transition-colors uppercase"
                         >
                             [ 5 YEARS ]
+                        </a>
+
+                        <a
+                            href="#about-me-section"
+                            onClick={handleScrollToAboutMe}
+                            className="text-sm font-light tracking-widest text-white/70 hover:text-cyan-400 transition-colors uppercase"
+                        >
+                            [ ABOUT ME ]
                         </a>
 
                     </div>

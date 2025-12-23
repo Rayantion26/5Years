@@ -2,14 +2,16 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePhysics } from '../hooks/usePhysics';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Hero = () => {
+const Hero = ({ isLoading }) => {
     const heroRef = useRef(null);
     const textRef = useRef(null);
     const attributionRef = useRef(null);
     const { applyForce } = usePhysics();
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         // Typewriter Effect
@@ -39,13 +41,16 @@ const Hero = () => {
             segment.split("").forEach(char => {
                 const span = document.createElement("span");
                 span.innerText = char;
-                span.style.opacity = 0;
+                span.style.opacity = 0; // Default hidden
                 container.appendChild(span);
                 allChars.push(span);
             });
 
             textRef.current.appendChild(container);
         });
+
+        // Wait for loading to finish before starting animation
+        if (isLoading) return;
 
         const ctx = gsap.context(() => {
             // 2. Animate all chars sequentially with ScrollTrigger
@@ -71,11 +76,11 @@ const Hero = () => {
                     ease: "power2.out"
                 }, "+=0.5"); // Slight delay after typing
 
-            // Floating Animation for the container (Independent)
+            // Floating Animation for the container (Independent) (Reduced on Mobile)
             gsap.to(heroRef.current, {
-                y: "+=15",
-                rotationX: "+=2",
-                rotationY: "+=2",
+                y: isMobile ? "+=5" : "+=15",
+                rotationX: isMobile ? 0 : "+=2",
+                rotationY: isMobile ? 0 : "+=2",
                 duration: 6,
                 repeat: -1,
                 yoyo: true,
@@ -84,10 +89,10 @@ const Hero = () => {
         }, heroRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [isLoading, isMobile]);
 
     const handleMouseMove = (e) => {
-        if (!heroRef.current) return;
+        if (isMobile || !heroRef.current) return;
         const rect = heroRef.current.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;

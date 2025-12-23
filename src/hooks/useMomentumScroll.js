@@ -1,14 +1,23 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import { useIsMobile } from './useIsMobile';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export const useMomentumScroll = () => {
     const wrapperRef = useRef(null);
     const contentRef = useRef(null);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
+        // If mobile, do not initialize momentum scroll
+        if (isMobile) {
+            const body = document.body;
+            body.style.height = '';
+            return;
+        }
+
         const body = document.body;
         const content = contentRef.current;
         const wrapper = wrapperRef.current;
@@ -66,7 +75,7 @@ export const useMomentumScroll = () => {
             cancelAnimationFrame(rafId);
             body.style.height = ''; // Reset
         };
-    }, []);
+    }, [isMobile]);
 
     return { wrapperRef, contentRef };
 };

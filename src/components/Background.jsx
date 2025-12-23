@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,6 +16,7 @@ const CODE_SNIPPETS = [
 ];
 
 const Background = () => {
+    const isMobile = useIsMobile();
     const containerRef = useRef(null);
     const particlesRef = useRef([]);
 
@@ -23,8 +25,8 @@ const Background = () => {
         if (!container) return;
 
         // Create particles
-        // Increased to 120 for better coverage
-        const particleCount = 120;
+        // Mobile: 30, Desktop: 120
+        const particleCount = isMobile ? 30 : 120;
         particlesRef.current = [];
 
         for (let i = 0; i < particleCount; i++) {
@@ -43,11 +45,12 @@ const Background = () => {
             container.appendChild(el);
 
             // Animate drifting
+            // Simplify animation on mobile (no extensive 3D rotation if causing lag)
             gsap.to(el, {
                 x: `+=${Math.random() * 200 - 100}`,
                 y: `+=${Math.random() * 200 - 100}`,
-                z: `+=${Math.random() * 100 - 50}`,
-                rotation: Math.random() * 360,
+                z: isMobile ? 0 : `+=${Math.random() * 100 - 50}`, // Flatten on mobile
+                rotation: isMobile ? 0 : Math.random() * 360,     // No rotation on mobile
                 duration: Math.random() * 20 + 10,
                 repeat: -1,
                 yoyo: true,
@@ -59,6 +62,7 @@ const Background = () => {
 
         // Mouse parallax
         const parallax = (e) => {
+            if (isMobile) return; // Disable on mobile
             const x = (e.clientX / window.innerWidth - 0.5) * 50;
             const y = (e.clientY / window.innerHeight - 0.5) * 50;
             // Move container
@@ -93,6 +97,9 @@ const Background = () => {
 
         // Realistic Glass Break
         const shatter = (e) => {
+            // Re-enabled on mobile, but let's be careful with performance
+            // if (isMobile) return; 
+
             // Vibe Flash & Container Bump
             const flash = document.createElement('div');
             flash.className = 'fixed inset-0 z-50 pointer-events-none bg-cyan-400 mix-blend-overlay';
@@ -117,7 +124,8 @@ const Background = () => {
 
             const clickX = e.clientX;
             const clickY = e.clientY;
-            const radius = 150;
+            // Smaller radius on mobile to hit fewer particles
+            const radius = isMobile ? 80 : 150;
 
             const targets = particlesRef.current.filter(el => {
                 const rect = el.getBoundingClientRect();
@@ -142,7 +150,8 @@ const Background = () => {
                 };
 
                 // 1. Determine Cuts (2, 3, or 4 pieces)
-                const pieces = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4
+                // Simplify on mobile: always 2 pieces to save DOM nodes
+                const pieces = isMobile ? 2 : (Math.floor(Math.random() * 3) + 2);
                 const sliceHeight = 100 / pieces;
                 const shards = [];
 
@@ -201,37 +210,43 @@ const Background = () => {
         };
 
         // Initialize ScrollTrigger for velocity reaction
-        ScrollTrigger.create({
-            onUpdate: (self) => {
-                const velocity = Math.abs(self.getVelocity());
-                const timeScale = 1 + (velocity / 2000); // Increased chaos on fast scroll
+        // Only on Desktop
+        if (!isMobile) {
+            ScrollTrigger.create({
+                onUpdate: (self) => {
+                    const velocity = Math.abs(self.getVelocity());
+                    const timeScale = 1 + (velocity / 2000); // Increased chaos on fast scroll
+                    const tweens = gsap.getTweensOf(particlesRef.current);
+                    gsap.to(tweens, {
+                        timeScale: timeScale,
+                        duration: 0.5,
+                        overwrite: true
+                    });
+                }
+            });
+        }
 
-                // Adjust global timeScale for particles?
-                // Better: adjust the tweens of the particles
-                const tweens = gsap.getTweensOf(particlesRef.current);
-                gsap.to(tweens, {
-                    timeScale: timeScale,
-                    duration: 0.5,
-                    overwrite: true
-                });
-            }
-        });
-
-        if (!window.parallaxListener) {
+        if (!window.parallaxListener && !isMobile) {
             window.addEventListener('mousemove', parallax);
             window.parallaxListener = true;
         }
+
+        // Shatter listener - Always On
         window.addEventListener('click', shatter);
 
         return () => {
-            window.removeEventListener('mousemove', parallax);
+            if (!isMobile) {
+                window.removeEventListener('mousemove', parallax);
+                window.parallaxListener = false;
+            }
+            // Always remove click listener
             window.removeEventListener('click', shatter);
-            window.parallaxListener = false;
+
             container.innerHTML = '';
             particlesRef.current = [];
             ScrollTrigger.getAll().forEach(t => t.kill());
         }
-    }, []);
+    }, [isMobile]);
 
     return (
         <div

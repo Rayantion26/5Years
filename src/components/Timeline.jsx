@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,6 +17,7 @@ const Timeline = () => {
     const sectionRef = useRef(null);
     const beamRef = useRef(null);
     const cardsRef = useRef([]);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         const section = sectionRef.current;
@@ -24,81 +26,74 @@ const Timeline = () => {
 
         if (!section || !beam) return;
 
-        // Beam Animation: Grows as you scroll through the section
-        gsap.fromTo(beam,
-            { height: '0%' },
-            {
-                height: '100%',
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: section,
-                    start: 'top center',
-                    end: 'bottom center',
-                    scrub: 0.5
-                }
-            }
-        );
-
-        // Cards Animation
-        cards.forEach((card, i) => {
-            if (!card) return;
-
-            // Drift in
-            gsap.fromTo(card,
-                { opacity: 0, x: i % 2 === 0 ? -100 : 100 },
+        const ctx = gsap.context(() => {
+            // Beam Animation: Grows as you scroll through the section
+            gsap.fromTo(beam,
+                { height: '0%' },
                 {
-                    opacity: 1,
-                    x: 0,
-                    duration: 1,
-                    ease: 'power3.out',
+                    height: '100%',
+                    ease: 'none',
                     scrollTrigger: {
-                        trigger: card,
-                        start: 'top 80%',
-                        toggleActions: 'play none none reverse'
+                        trigger: section,
+                        start: 'top center',
+                        end: 'bottom center',
+                        scrub: 0.5
                     }
                 }
             );
 
-            // Active/Focus State (Pop when centered)
-            gsap.to(card, {
-                scale: 1.1,
-                boxShadow: '0 0 30px rgba(0, 255, 255, 0.2)',
-                borderColor: 'rgba(0, 255, 255, 0.6)',
-                scrollTrigger: {
-                    trigger: card,
-                    start: 'center center',
-                    end: 'center center',
-                    scrub: true,
-                    // We only want a momentary pop, or a sustained one while near center.
-                    // Let's use toggleActions for a simpler approach: enter, leave, enterBack, leaveBack
-                    // Actually, scrubbing a timeline for the scale might be smoother.
-                }
-            });
+            // Cards Animation
+            cards.forEach((card, i) => {
+                if (!card) return;
 
-            // Let's refine the "Pop" - create a separate timeline tied to the card's position
-            const popTimeline = gsap.timeline({
-                scrollTrigger: {
-                    trigger: card,
-                    start: 'top 60%',
-                    end: 'bottom 40%',
-                    scrub: true,
-                }
-            });
+                // Drift in (Fade + Slide)
+                gsap.fromTo(card,
+                    {
+                        opacity: 0,
+                        x: isMobile ? (i % 2 === 0 ? -30 : 30) : (i % 2 === 0 ? -100 : 100)
+                    },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: card,
+                            start: 'top 85%', // Trigger slightly earlier on mobile (85% vs 80%) to ensure visibility
+                            toggleActions: 'play none none reverse'
+                        }
+                    }
+                );
 
-            popTimeline.to(card, {
-                scale: 1.05,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(0, 255, 255, 0.5)',
-                ease: 'power1.inOut'
-            }).to(card, {
-                scale: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                ease: 'power1.inOut'
-            });
-        });
+                // Highlight/Pop Animation
+                // Consolidated into a single timeline to avoid conflict
+                const popTl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 60%',
+                        end: 'bottom 40%',
+                        scrub: true,
+                    }
+                });
 
-    }, []);
+                popTl.to(card, {
+                    scale: 1.05,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(0, 255, 255, 0.5)',
+                    boxShadow: '0 0 30px rgba(0, 255, 255, 0.2)',
+                    ease: 'power1.inOut'
+                }).to(card, {
+                    scale: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    boxShadow: 'none',
+                    ease: 'power1.inOut'
+                });
+            });
+        }, sectionRef);
+
+        return () => ctx.revert();
+    }, [isMobile]);
 
     return (
         <section
@@ -127,7 +122,7 @@ const Timeline = () => {
                             className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-lg max-w-md w-full relative group transition-colors duration-500"
                         >
                             {/* Year Badge */}
-                            <div className="absolute -top-4 -left-4 bg-black border border-cyan-500/50 px-3 py-1 text-cyan-400 font-mono text-sm tracking-widest shadow-[0_0_10px_rgba(0,255,255,0.2)]">
+                            <div className={`absolute -top-4 ${i % 2 === 0 ? '-left-4' : '-right-4'} bg-black border border-cyan-500/50 px-3 py-1 text-cyan-400 font-mono text-sm tracking-widest shadow-[0_0_10px_rgba(0,255,255,0.2)]`}>
                                 {item.year}
                             </div>
 
