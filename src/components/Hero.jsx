@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePhysics } from '../hooks/usePhysics';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
     const heroRef = useRef(null);
@@ -44,33 +47,43 @@ const Hero = () => {
             textRef.current.appendChild(container);
         });
 
-        // 2. Animate all chars sequentially
-        gsap.to(allChars, {
-            opacity: 1,
-            duration: 0.05,
-            stagger: 0.05,
-            ease: "none"
-        });
+        const ctx = gsap.context(() => {
+            // 2. Animate all chars sequentially with ScrollTrigger
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: heroRef.current,
+                    start: "top bottom", // Trigger as soon as the top enters the viewport (which is always true on load)
+                    end: "bottom top",
+                    toggleActions: "play reverse restart reverse",
+                }
+            });
 
-        // Floating Animation for the container
-        gsap.to(heroRef.current, {
-            y: "+=15",
-            rotationX: "+=2",
-            rotationY: "+=2",
-            duration: 6,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
+            tl.to(allChars, {
+                opacity: 1,
+                duration: 0.05,
+                stagger: 0.05,
+                ease: "none"
+            })
+                // Attribution Fade In
+                .to(attributionRef.current, {
+                    opacity: 1,
+                    duration: 2,
+                    ease: "power2.out"
+                }, "+=0.5"); // Slight delay after typing
 
-        // Attribution Fade In
-        gsap.to(attributionRef.current, {
-            opacity: 1,
-            duration: 2,
-            delay: 4, // Wait for typewriter to finish mostly
-            ease: "power2.out"
-        });
+            // Floating Animation for the container (Independent)
+            gsap.to(heroRef.current, {
+                y: "+=15",
+                rotationX: "+=2",
+                rotationY: "+=2",
+                duration: 6,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        }, heroRef);
 
+        return () => ctx.revert();
     }, []);
 
     const handleMouseMove = (e) => {

@@ -90,9 +90,7 @@ const SmartHeader = () => {
                         >
                             [ 5 YEARS ]
                         </a>
-                        <span className="text-sm font-light tracking-widest text-white/30 cursor-not-allowed uppercase">
-                            [ ARCHIVES ]
-                        </span>
+
                     </div>
                 </nav>
             </div>

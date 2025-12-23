@@ -31,12 +31,24 @@ const AboutMe = () => {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
+
+            // Title Animation with ScrollTrigger
             gsap.from(titleRef.current, {
                 y: 50,
                 opacity: 0,
                 duration: 1,
-                ease: "power3.out"
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: titleRef.current,
+                    start: "top 80%",
+                    end: "bottom 20%",
+                    toggleActions: "play reverse play reverse"
+                }
             });
+
+            // Cards Animation with ScrollTrigger
+            // Note: Since cards are in a grid, we might want to trigger them as a group
+            // or use simpler sequential triggers. If we want them to "rewind" as a group when scrolling up:
 
             gsap.from(".project-card", {
                 y: 100,
@@ -44,7 +56,12 @@ const AboutMe = () => {
                 duration: 0.8,
                 stagger: 0.2,
                 ease: "back.out(1.2)",
-                delay: 0.5
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: "top 70%", // Start animating when container top hits 70% of viewport
+                    end: "bottom top",
+                    toggleActions: "play reverse play reverse"
+                }
             });
         }, containerRef);
 
