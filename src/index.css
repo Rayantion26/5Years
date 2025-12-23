@@ -14,3 +14,17 @@ body {
     overflow-x: hidden;
     background-color: #000;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ffff;
+    border-radius: 3px;
+}

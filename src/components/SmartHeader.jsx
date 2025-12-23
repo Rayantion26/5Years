@@ -73,13 +73,12 @@ const SmartHeader = () => {
 
                 <nav className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Logo / Home Link */}
-                    <Link
-                        to="/"
-                        onClick={handleScrollToTop}
+                    <a
+                        href="/"
                         className="text-lg font-bold font-display tracking-widest text-white hover:text-cyan-400 transition-colors uppercase"
                     >
                         [ HOME ]
-                    </Link>
+                    </a>
 
                     {/* Navigation Links */}
                     <div className="flex gap-8">

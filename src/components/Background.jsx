@@ -33,6 +33,7 @@ const Background = () => {
             el.innerText = CODE_SNIPPETS[Math.floor(Math.random() * CODE_SNIPPETS.length)];
 
             // Random initial position
+            // Use a wider range to avoid edge bunching
             const x = Math.random() * window.innerWidth;
             const y = Math.random() * window.innerHeight;
             const z = Math.random() * 200 - 100; // Depth

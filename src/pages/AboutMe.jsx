@@ -31,6 +31,18 @@ const AboutMe = () => {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
+            // Check for transition overlay
+            const overlay = document.getElementById('page-transition-overlay');
+            if (overlay) {
+                gsap.to(overlay, {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        overlay.remove();
+                    }
+                });
+            }
 
             // Title Animation with ScrollTrigger
             gsap.from(titleRef.current, {

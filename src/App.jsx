@@ -44,16 +44,27 @@ function App() {
     }, []);
 
     useEffect(() => {
+        if (isLoading) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }, [isLoading]);
+
+    useEffect(() => {
         if (!isLoading) {
-            // Refresh ScrollTrigger after loader exits to ensure positions are correct
+            // Refresh ScrollTrigger and Recalculate Body Height after loader exits
             setTimeout(() => {
+                // 1. Force recalculate of momentum scroll height
+                window.dispatchEvent(new Event('resize'));
+
+                // 2. Refresh ScrollTrigger
                 const ScrollTrigger = gsap.utils.checkPrefix("ScrollTrigger") || window.ScrollTrigger;
                 if (ScrollTrigger) ScrollTrigger.refresh();
-                // If using the plugin directly
                 if (gsap.plugins.scrollTrigger) gsap.plugins.scrollTrigger.refresh();
 
                 // Forcing a global refresh safely
-                gsap.globalTimeline.pause().resume(); // Sometimes helps wake up things
+                gsap.globalTimeline.pause().resume();
 
                 // Specific ScrollTrigger refresh via main gsap object if registered
                 if (gsap.ScrollTrigger) gsap.ScrollTrigger.refresh();
@@ -62,7 +73,7 @@ function App() {
     }, [isLoading]);
 
     return (
-        <Router>
+        <Router basename={import.meta.env.BASE_URL}>
             <div className="min-h-screen bg-black text-white font-display relative selection:bg-neon-cyan selection:text-black select-none">
                 {/* Loader Overlay */}
                 {isLoading && <Loader onComplete={() => setIsLoading(false)} />}
