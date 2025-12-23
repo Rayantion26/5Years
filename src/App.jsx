@@ -43,6 +43,24 @@ function App() {
         gsap.config({ force3D: true });
     }, []);
 
+    useEffect(() => {
+        if (!isLoading) {
+            // Refresh ScrollTrigger after loader exits to ensure positions are correct
+            setTimeout(() => {
+                const ScrollTrigger = gsap.utils.checkPrefix("ScrollTrigger") || window.ScrollTrigger;
+                if (ScrollTrigger) ScrollTrigger.refresh();
+                // If using the plugin directly
+                if (gsap.plugins.scrollTrigger) gsap.plugins.scrollTrigger.refresh();
+
+                // Forcing a global refresh safely
+                gsap.globalTimeline.pause().resume(); // Sometimes helps wake up things
+
+                // Specific ScrollTrigger refresh via main gsap object if registered
+                if (gsap.ScrollTrigger) gsap.ScrollTrigger.refresh();
+            }, 100);
+        }
+    }, [isLoading]);
+
     return (
         <Router>
             <div className="min-h-screen bg-black text-white font-display relative selection:bg-neon-cyan selection:text-black select-none">
