@@ -41,6 +41,7 @@ function App() {
 
     useEffect(() => {
         gsap.config({ force3D: true });
+        gsap.ticker.lagSmoothing(0); // Prevents jumps when tab is inactive or heavy load
     }, []);
 
     useEffect(() => {

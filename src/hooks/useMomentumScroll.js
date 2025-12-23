@@ -17,7 +17,10 @@ export const useMomentumScroll = () => {
 
         let scrollY = 0;
         let currentScroll = 0;
-        const ease = 0.05; // Friction
+        const ease = 0.03; // Lower friction for "slower stop" (more momentum)
+
+        // Optimized setter
+        const setY = gsap.quickSetter(content, "y", "px");
 
         // Set body height to match content
         const resize = () => {
@@ -37,9 +40,11 @@ export const useMomentumScroll = () => {
                 currentScroll = scrollY;
             }
 
-            // Sync Translation
+            // Sync Translation using quickSetter
             if (content) {
-                gsap.set(content, { y: -currentScroll, force3D: true });
+                setY(-currentScroll);
+                // force3D is implied with quickSetter on transform properties usually, 
+                // but let's stick to this simple optimized setter.
             }
 
             // Loop
