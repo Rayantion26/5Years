@@ -115,7 +115,9 @@ const Timeline = () => {
                 {MILESTONES.map((item, i) => (
                     <div
                         key={i}
-                        className={`flex w-full ${i % 2 === 0 ? 'justify-end pr-12 md:pr-24' : 'justify-start pl-12 md:pl-24'}`}
+                        className={`flex w-full ${i % 2 === 0
+                            ? 'justify-end pl-10 pr-4 md:pl-0 md:pr-24'
+                            : 'justify-start pr-10 pl-4 md:pr-0 md:pl-24'}`}
                     >
                         <div
                             ref={el => cardsRef.current[i] = el}
